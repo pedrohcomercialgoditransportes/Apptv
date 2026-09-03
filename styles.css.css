@@ -1,0 +1,126 @@
+/* GODI Transportes — identidade visual clara (baseada no padrão validado com Pedro) */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --godi-bg: #EEF1F6;
+  --godi-bg-raise: rgba(255, 255, 255, 0.05);
+  --godi-card: rgba(255, 255, 255, 0.11);
+  --godi-card-soft: rgba(255, 255, 255, 0.06);
+  --godi-border: rgba(255, 255, 255, 0.18);
+  --godi-text: #F4F9FB;
+  --godi-text-dim: rgba(244, 249, 251, 0.68);
+  --godi-text-faint: rgba(244, 249, 251, 0.42);
+
+  --godi-mint: #01FFA0;
+  --godi-mint-bright: #01FFA0;
+  --godi-cyan: #6FE3F2;
+  --godi-cyan-bright: #02C5DB;
+  --godi-gradient: linear-gradient(90deg, #02C5DB 0%, #01FFA0 100%);
+  --godi-on-gradient: #06222b;
+
+  --godi-gold: #FFD166;
+  --godi-silver: #D7E0EA;
+  --godi-bronze: #E7A469;
+  --godi-danger: #FF6B81;
+  --godi-track: rgba(255, 255, 255, 0.14);
+
+  --godi-radius: 18px;
+  --godi-radius-sm: 10px;
+  --godi-shadow: 0 1px 2px rgba(3, 14, 20, 0.15), 0 20px 40px -20px rgba(3, 14, 20, 0.55);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: linear-gradient(150deg, #08202C 0%, #0C4A5E 32%, #1382A8 62%, #7FD4E6 100%);
+  color: var(--godi-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.godi-logo-wordmark {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  font-size: 19px;
+  color: var(--godi-text);
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.godi-logo-wordmark span {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--godi-text-dim);
+  margin-top: 3px;
+}
+
+.godi-panel {
+  background: var(--godi-card);
+  border: 1px solid var(--godi-border);
+  border-radius: var(--godi-radius);
+  box-shadow: var(--godi-shadow);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+
+.godi-gradient-text {
+  background: var(--godi-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.the-process-pill {
+  font-family: 'Montserrat', sans-serif;
+  color: var(--godi-mint);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  border: 1px solid rgba(0, 168, 118, 0.28);
+  background: rgba(0, 168, 118, 0.08);
+  padding: 7px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.godi-btn {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 28px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.godi-btn:active { transform: scale(0.97); }
+.godi-btn-primary {
+  background: var(--godi-gradient);
+  color: var(--godi-on-gradient);
+}
+.godi-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.godi-btn-ghost {
+  background: var(--godi-card);
+  border: 1px solid var(--godi-border);
+  color: var(--godi-text);
+}
+
+.godi-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+.godi-scrollbar::-webkit-scrollbar-thumb { background: var(--godi-border); border-radius: 8px; }
+
+/* Ícones de linha (substituem emojis coloridos, pra não brigar com o fundo) */
+.ico {
+  width: 1em; height: 1em; display: inline-block; vertical-align: -0.15em;
+  stroke: currentColor; fill: none; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.ico-solid { stroke: none; fill: currentColor; }
