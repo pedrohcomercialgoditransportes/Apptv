@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GODI · Painel Gerencial</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+  html, body { min-height: 100%; }
+  /* O degradê original (styles.css) foi pensado pra uma tela cheia (a TV);
+     numa página que rola bastante (esse painel), ele "clareia" lá embaixo e
+     os cartões escuros da tabela perdem contraste. Aqui a gente fixa um
+     degradê mais escuro que se repete ao longo da rolagem inteira. */
+  html { background: #08202C !important; }
+  body {
+    padding: 24px 20px 60px;
+    background: linear-gradient(180deg, #08202C 0%, #0C3A4B 50%, #08202C 100%) !important;
+  }
+
+  .pg-wrap { max-width: 1220px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+
+  /* Cartões "vitrine" (header, metas, KPIs, gráficos) usam o mesmo fundo em
+     degradê mint/cyan com texto azul-marinho da TV — em vez de sobrescrever
+     .godi-panel pra todo mundo (que quebraria a tabela de ranking, pensada
+     pra fundo escuro), aplicamos só nos elementos que devem "brilhar". */
+  .pg-bright { background: var(--godi-gradient) !important; border: none !important; }
+
+  /* ---------- header ---------- */
+  .pg-header {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 16px 24px;
+    padding: 18px 24px;
+  }
+  .pg-header .brand { display: flex; align-items: center; gap: 12px; }
+  .pg-header .brand img { height: 34px; display: block; }
+  .pg-header .brand img.hidden { display: none; }
+  .pg-header .brand img.hidden + .fallback { display: flex; }
+  .pg-header .brand .fallback { display: none; }
+  .pg-header .godi-logo-wordmark, .pg-header .godi-logo-wordmark span { color: #06222b; }
+
+  .pg-header-text { flex: 1; min-width: 220px; }
+  .pg-header-text h1 {
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 22px; margin: 0 0 4px;
+    color: #06222b; letter-spacing: 0.2px;
+  }
+  .pg-header-text .pg-sub { font-size: 12.5px; font-weight: 700; color: #054957; }
+
+  .pg-header-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .pg-atualizado { font-size: 11px; font-weight: 700; color: #054957; text-align: right; }
+  .pg-print-btn { padding: 10px 18px; font-size: 13px; }
+
+  /* ---------- barra de período (Dia / Mês / Trimestre / Semestre / Ano / Período) ---------- */
+  .pg-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 14px 20px; }
+  .pg-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pg-tab {
+    font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 12px; letter-spacing: 0.3px;
+    text-transform: uppercase; color: #054957; background: rgba(6,34,43,0.08); border: none;
+    border-radius: 999px; padding: 8px 16px; cursor: pointer; transition: background 0.15s ease, color 0.15s ease;
+  }
+  .pg-tab:hover { background: rgba(6,34,43,0.16); }
+  .pg-tab.is-active { background: #08202C; color: var(--godi-mint); }
+  .pg-tab-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pg-tab-controls[hidden] { display: none; }
+  .pg-tab-controls span { font-size: 12px; font-weight: 700; color: #054957; }
+  .pg-tab-controls select, .pg-tab-controls input[type="date"] {
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; color: #06222b;
+    background: rgba(255,255,255,0.55); border: 1px solid rgba(6,34,43,0.25); border-radius: 8px;
+    padding: 7px 9px; outline: none;
+  }
+
+  /* ---------- seções ---------- */
+  .pg-section { display: flex; flex-direction: column; gap: 12px; }
+  .pg-section-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 16px; padding-left: 2px; }
+  .pg-section-title {
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 15px;
+    letter-spacing: 0.4px; text-transform: uppercase; color: var(--godi-text);
+    margin: 0;
+  }
+  .pg-section-note { font-size: 11.5px; font-weight: 700; color: var(--godi-text-faint); }
+
+  /* ---------- KPIs do período (valor único) ---------- */
+  .pg-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .pg-kpi-card { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .pg-kpi-top { display: flex; align-items: center; gap: 10px; }
+  .pg-kpi-icon-wrap {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    background: #08202C; color: var(--godi-mint); display: flex; align-items: center; justify-content: center;
+  }
+  .pg-kpi-icon-wrap .ico { width: 16px; height: 16px; }
+  .pg-kpi-titulo {
+    font-size: 11.5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;
+    color: #06222b; line-height: 1.25;
+  }
+  .pg-kpi-valor {
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 24px; color: #06222b; line-height: 1.1;
+  }
+  .pg-kpi-media { font-size: 10.5px; font-weight: 700; color: rgba(6,34,43,0.6); }
+
+  @media (max-width: 1000px) { .pg-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .pg-kpi-grid { grid-template-columns: 1fr; } }
+
+  /* ---------- metas de faturamento ---------- */
+  .metas-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .meta-card {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 16px 14px; gap: 4px; text-align: center;
+  }
+  .meta-percent-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: #08202C; color: var(--godi-mint);
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 13px;
+    padding: 4px 10px; border-radius: 999px; line-height: 1;
+  }
+  .meta-titulo {
+    font-size: 12px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase;
+    color: #06222b; line-height: 1.25; padding-right: 40px; width: 100%;
+  }
+  .meta-valor-alvo {
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 24px; line-height: 1.15;
+    color: #06222b; margin-top: 4px;
+  }
+  .meta-linhas { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+  .meta-linha { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+  .meta-linha-label {
+    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px;
+    color: rgba(6,34,43,0.6);
+  }
+  .meta-linha-valor { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 13px; color: #054957; }
+
+  @media (max-width: 1000px) { .metas-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ---------- gráficos (barras em CSS puro, sem lib externa) ---------- */
+  .pg-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .pg-chart-card { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .pg-chart-card.full { grid-column: 1 / -1; }
+  .pg-chart-titulo {
+    font-size: 12px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; color: #06222b;
+  }
+
+  .pg-chart-vbars { display: flex; align-items: flex-end; gap: 10px; height: 170px; padding-top: 6px; }
+  .pg-vbar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 6px; min-width: 0; }
+  .pg-vbar-valor { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 12.5px; color: #06222b; }
+  .pg-vbar { width: 100%; max-width: 36px; border-radius: 8px 8px 3px 3px; background: #08202C; min-height: 3px; transition: height 0.3s ease; }
+  .pg-vbar-label { font-size: 9px; font-weight: 800; color: rgba(6,34,43,0.65); text-align: center; line-height: 1.25; }
+
+  .pg-chart-hbars { display: flex; flex-direction: column; gap: 9px; }
+  .pg-hbar-row { display: grid; grid-template-columns: 96px 1fr 76px; align-items: center; gap: 10px; }
+  .pg-hbar-nome {
+    font-size: 11.5px; font-weight: 800; color: #06222b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .pg-hbar-track { background: rgba(6,34,43,0.14); border-radius: 999px; height: 13px; overflow: hidden; }
+  .pg-hbar-fill { height: 100%; border-radius: 999px; background: #08202C; min-width: 3px; transition: width 0.3s ease; }
+  .pg-hbar-valor { font-size: 11.5px; font-weight: 800; color: #06222b; text-align: right; white-space: nowrap; }
+
+  .pg-chart-empty { color: rgba(6,34,43,0.55); font-size: 12.5px; font-weight: 700; text-align: center; padding: 20px 0; }
+
+  @media (max-width: 900px) { .pg-charts-grid { grid-template-columns: 1fr; } }
+
+  /* ---------- tabela de ranking (fundo escuro translúcido, texto claro) ---------- */
+  .pg-table-wrap {
+    overflow-x: auto; border-radius: var(--godi-radius); background: var(--godi-card);
+    border: 1px solid var(--godi-border); box-shadow: var(--godi-shadow);
+  }
+  .pg-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  .pg-table thead th {
+    text-align: left; font-size: 10px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;
+    color: var(--godi-text-dim); padding: 12px 12px; white-space: nowrap;
+    border-bottom: 1px solid var(--godi-border);
+  }
+  .pg-table tbody td {
+    padding: 9px 12px; font-size: 12.5px; color: var(--godi-text); white-space: nowrap;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .pg-table tbody tr:last-child td { border-bottom: none; }
+  .pg-table tbody tr:nth-child(even) { background: rgba(255,255,255,0.03); }
+  .pg-table td.pg-rank {
+    width: 26px; height: 26px; border-radius: 50%; background: #08202C; color: var(--godi-text-dim);
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 11px; text-align: center;
+  }
+  .pg-table tr:first-child td.pg-rank { background: var(--godi-gradient); color: #06222b; }
+  .pg-table td.pg-nome { font-weight: 800; color: var(--godi-text); }
+  .pg-table td.pg-equipe-tag {
+    font-size: 10.5px; font-weight: 800; letter-spacing: 0.2px; padding: 3px 9px; border-radius: 999px;
+    background: rgba(255,255,255,0.08); color: var(--godi-text-dim); white-space: nowrap;
+  }
+  .pg-table td.pg-num { font-family: 'Montserrat', sans-serif; font-weight: 800; color: var(--godi-cyan-bright); }
+  .pg-table td.pg-pct { font-family: 'Montserrat', sans-serif; font-weight: 900; color: var(--godi-mint); }
+  .pg-table td.pg-faturamento { font-family: 'Montserrat', sans-serif; font-weight: 900; color: var(--godi-mint); }
+  .pg-table-empty { padding: 30px 14px; text-align: center; color: var(--godi-text-faint); font-size: 13px; }
+
+  .pg-footer {
+    text-align: center; font-size: 11.5px; color: var(--godi-text-faint); padding: 8px 0 0;
+  }
+
+  /* ---------- impressão ---------- */
+  @media print {
+    @page { size: A4 landscape; margin: 12mm; }
+    body { padding: 0; background: #fff !important; }
+    .pg-print-btn { display: none !important; }
+    .pg-toolbar { display: none !important; }
+    .godi-panel, .pg-table-wrap, .pg-bright {
+      background: #fff !important; box-shadow: none !important; border: 1px solid #ccc !important;
+      backdrop-filter: none !important;
+    }
+    .pg-section-title, .pg-footer { color: #06222b !important; }
+    .pg-section-note { color: #6b7a80 !important; }
+    .pg-section-head { align-items: flex-start !important; }
+    .pg-table thead th { color: #06222b !important; }
+    .pg-table tbody td { color: #06222b !important; border-bottom-color: #e2e2e2 !important; }
+    .pg-table td.pg-num, .pg-table td.pg-faturamento, .pg-table td.pg-pct { color: #06222b !important; }
+    .pg-kpi-icon-wrap, .meta-percent-badge, .pg-vbar, .pg-hbar-fill, .pg-table td.pg-rank {
+      background: #08202C !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .pg-table tr:first-child td.pg-rank { background: #06222b !important; color: #fff !important; }
+    .pg-table tbody tr { break-inside: avoid; }
+    .pg-section-title { break-after: avoid; }
+    .pg-table-wrap { break-inside: auto; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="pg-wrap">
+
+    <header class="pg-header card godi-panel pg-bright">
+      <div class="brand">
+        <img src="assets/logo.png" alt="GODI Transportes" onerror="this.classList.add('hidden')" />
+        <div class="fallback"><div class="godi-logo-wordmark">GODI<span>TRANSPORTES</span></div></div>
+      </div>
+      <div class="pg-header-text">
+        <h1>Painel Gerencial · Comercial</h1>
+        <div class="pg-sub">RedBull + The Process — metas em tempo real e desempenho por período</div>
+      </div>
+      <div class="pg-header-actions">
+        <div class="pg-atualizado" id="atualizadoEm">Atualizado às —</div>
+        <button class="godi-btn godi-btn-primary pg-print-btn" onclick="window.print()">Imprimir / Salvar PDF</button>
+      </div>
+    </header>
+
+    <section class="pg-toolbar card godi-panel pg-bright">
+      <div class="pg-tabs" id="pgTabs">
+        <button type="button" class="pg-tab is-active" data-periodo="dia">Dia</button>
+        <button type="button" class="pg-tab" data-periodo="mes">Mês</button>
+        <button type="button" class="pg-tab" data-periodo="trimestre">Trimestre</button>
+        <button type="button" class="pg-tab" data-periodo="semestre">Semestre</button>
+        <button type="button" class="pg-tab" data-periodo="ano">Ano</button>
+        <button type="button" class="pg-tab" data-periodo="periodo">Período</button>
+      </div>
+      <div class="pg-tab-controls" id="ctrlDia">
+        <input type="date" id="inputDia" />
+      </div>
+      <div class="pg-tab-controls" id="ctrlMes" hidden>
+        <select id="selectMes"></select>
+        <select id="selectAnoMes"></select>
+      </div>
+      <div class="pg-tab-controls" id="ctrlTrimestre" hidden>
+        <select id="selectTrimestre">
+          <option value="1">1º Trimestre (Jan–Mar)</option>
+          <option value="2">2º Trimestre (Abr–Jun)</option>
+          <option value="3">3º Trimestre (Jul–Set)</option>
+          <option value="4">4º Trimestre (Out–Dez)</option>
+        </select>
+        <select id="selectAnoTri"></select>
+      </div>
+      <div class="pg-tab-controls" id="ctrlSemestre" hidden>
+        <select id="selectSemestre">
+          <option value="1">1º Semestre (Jan–Jun)</option>
+          <option value="2">2º Semestre (Jul–Dez)</option>
+        </select>
+        <select id="selectAnoSem"></select>
+      </div>
+      <div class="pg-tab-controls" id="ctrlAno" hidden>
+        <select id="selectAno"></select>
+      </div>
+      <div class="pg-tab-controls" id="ctrlPeriodo" hidden>
+        <input type="date" id="inputInicio" /> <span>até</span> <input type="date" id="inputFim" />
+      </div>
+    </section>
+
+    <section class="pg-section">
+      <div class="pg-section-head">
+        <h2 class="pg-section-title">🎯 Meta de Faturamento — Tempo Real</h2>
+        <span class="pg-section-note">Sempre hoje + mês atual, não muda com o período selecionado abaixo</span>
+      </div>
+      <div class="metas-grid" id="metasGrid"></div>
+    </section>
+
+    <section class="pg-section">
+      <div class="pg-section-head">
+        <h2 class="pg-section-title" id="periodoTitulo">Desempenho — Hoje</h2>
+        <span class="pg-section-note" id="periodoSub">—</span>
+      </div>
+      <div class="pg-kpi-grid" id="kpiPeriodo"></div>
+    </section>
+
+    <section class="pg-section">
+      <h2 class="pg-section-title">Gráficos do Período</h2>
+      <div class="pg-charts-grid">
+        <div class="card godi-panel pg-bright pg-chart-card full">
+          <div class="pg-chart-titulo">Ligações Efetivas por Bloco de Horário</div>
+          <div class="pg-chart-vbars" id="chartBlocos"></div>
+        </div>
+        <div class="card godi-panel pg-bright pg-chart-card">
+          <div class="pg-chart-titulo">Ligações Efetivas por Comercial</div>
+          <div class="pg-chart-hbars" id="chartLigacoes"></div>
+        </div>
+        <div class="card godi-panel pg-bright pg-chart-card">
+          <div class="pg-chart-titulo">Faturamento por Comercial</div>
+          <div class="pg-chart-hbars" id="chartFaturamento"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pg-section">
+      <h2 class="pg-section-title" id="tabelaTitulo">Desempenho Individual — Hoje</h2>
+      <div class="pg-table-wrap">
+        <table class="pg-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Comercial</th>
+              <th>Equipe</th>
+              <th>Discagens</th>
+              <th>Efetivas</th>
+              <th>Efetiv. %</th>
+              <th>Cotações</th>
+              <th>Reuniões</th>
+              <th>Faturamento</th>
+              <th>Cargas</th>
+              <th>Cli. Novos</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabela"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="pg-footer">GODI Transportes — painel gerado automaticamente a partir dos lançamentos diários da equipe comercial.</div>
+
+  </div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+
+  function fmtMoeda(v) {
+    return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+  }
+  function fmtNum(v) {
+    return (Number(v) || 0).toLocaleString('pt-BR');
+  }
+
+  const ICONES = {
+    discagem: '<path d="M5 4h3l2 5-2.5 2a12 12 0 0 0 5.5 5.5l2-2.5 5 2v3a2 2 0 0 1-2 2C10.5 21 3 13.5 3 6a2 2 0 0 1 2-2Z"/>',
+    ligacao: '<path d="M3 5.5C3 4 4 3 5.5 3h1.8c.5 0 .9.3 1 .8l1 3.3c.1.4 0 .8-.3 1.1L7.6 9.6c1 2.3 2.8 4.1 5.1 5.1l1.4-1.4c.3-.3.7-.4 1.1-.3l3.3 1c.5.1.8.5.8 1v1.8c0 1.5-1 2.5-2.5 2.5C9.9 21.5 2.5 14.1 3 5.5Z"/>',
+    percentual: '<path d="M19 5 5 19"/><circle cx="7.5" cy="7.5" r="2.3"/><circle cx="16.5" cy="16.5" r="2.3"/>',
+    cotacoes: '<path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M9 12h6M9 16h6M9 8h3"/>',
+    faturamento: '<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="3"/>',
+    cargas: '<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18.5" r="1.6"/><circle cx="17.5" cy="18.5" r="1.6"/>',
+    reunioes: '<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3 2.5-5 6-5s6 2 6 5"/><path d="M10 20c0-3 2.5-5 6-5s6 2 6 5"/>',
+    clientesNovos: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M18 8v6M15 11h6"/>'
+  };
+
+  function icone(nome) {
+    return `<svg class="ico" viewBox="0 0 24 24">${ICONES[nome] || ''}</svg>`;
+  }
+
+  function kpiCard(iconeNome, titulo, valor, media) {
+    return `
+      <div class="card godi-panel pg-bright pg-kpi-card">
+        <div class="pg-kpi-top">
+          <div class="pg-kpi-icon-wrap">${icone(iconeNome)}</div>
+          <div class="pg-kpi-titulo">${titulo}</div>
+        </div>
+        <div class="pg-kpi-valor">${valor}</div>
+        ${media ? `<div class="pg-kpi-media">${media}</div>` : ''}
+      </div>
+    `;
+  }
+
+  function criarMetaCard(titulo, valor, meta, pct) {
+    const pctExibido = Math.max(0, Math.round(pct || 0));
+    const falta = Math.max(0, meta - valor);
+    return `
+      <div class="card godi-panel pg-bright meta-card">
+        <div class="meta-percent-badge">${pctExibido}%</div>
+        <div class="meta-titulo">${titulo}</div>
+        <div class="meta-valor-alvo">${fmtMoeda(meta)}</div>
+        <div class="meta-linhas">
+          <div class="meta-linha">
+            <span class="meta-linha-label">Realizado:</span>
+            <span class="meta-linha-valor">${fmtMoeda(valor)}</span>
+          </div>
+          <div class="meta-linha">
+            <span class="meta-linha-label">Falta:</span>
+            <span class="meta-linha-valor">${fmtMoeda(falta)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderMetasFaturamento(lista) {
+    const el = $('metasGrid');
+    if (!lista || !lista.length) { el.innerHTML = '<div class="pg-chart-empty">Nenhuma meta configurada ainda.</div>'; return; }
+    const cards = [];
+    lista.forEach(m => {
+      cards.push(criarMetaCard(`Meta Diária · ${m.equipe}`, m.hoje, m.metaDiaria, m.percentualDiaria));
+      cards.push(criarMetaCard(`Meta Mensal · ${m.equipe}`, m.mes, m.metaMensal, m.percentualMensal));
+    });
+    el.innerHTML = cards.join('');
+  }
+
+  // ---------- Gráficos (barras em CSS puro) ----------
+
+  const BLOCOS_HORARIO = (() => {
+    const cfg = (window.CONFIG && CONFIG.BLOCOS_LIGACAO) || {};
+    const todos = [].concat(cfg.manha || [], cfg.tarde || []);
+    return todos.map(b => {
+      const [h1, m1] = b;
+      return `${String(h1).padStart(2, '0')}:${String(m1).padStart(2, '0')}h`;
+    });
+  })();
+
+  function renderChartBlocos(blocos) {
+    const el = $('chartBlocos');
+    const valores = blocos || [];
+    const max = Math.max(1, ...valores);
+    if (!valores.some(v => v > 0)) {
+      el.innerHTML = '<div class="pg-chart-empty">Sem ligações registradas no período.</div>';
+      return;
+    }
+    el.innerHTML = valores.map((v, i) => `
+      <div class="pg-vbar-col">
+        <div class="pg-vbar-valor">${fmtNum(v)}</div>
+        <div class="pg-vbar" style="height:${Math.max(4, Math.round((v / max) * 100))}%"></div>
+        <div class="pg-vbar-label">Bloco ${i + 1}<br>${BLOCOS_HORARIO[i] || ''}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderChartHBars(elId, itens, formatador) {
+    const el = $(elId);
+    const top = itens.filter(x => x.valor > 0).slice(0, 8);
+    if (!top.length) {
+      el.innerHTML = '<div class="pg-chart-empty">Sem dados no período.</div>';
+      return;
+    }
+    const max = Math.max(1, ...top.map(x => x.valor));
+    el.innerHTML = top.map(x => `
+      <div class="pg-hbar-row">
+        <div class="pg-hbar-nome">${x.nome}</div>
+        <div class="pg-hbar-track"><div class="pg-hbar-fill" style="width:${Math.max(2, Math.round((x.valor / max) * 100))}%"></div></div>
+        <div class="pg-hbar-valor">${formatador(x.valor)}</div>
+      </div>
+    `).join('');
+  }
+
+  // ---------- Tabela de ranking ----------
+  function renderTabela(lista) {
+    const el = $('corpoTabela');
+    if (!lista || !lista.length) {
+      el.innerHTML = `<tr><td colspan="11" class="pg-table-empty">Nenhum lançamento nesse período.</td></tr>`;
+      return;
+    }
+    el.innerHTML = lista.map((x, i) => `
+      <tr>
+        <td class="pg-rank">${i + 1}</td>
+        <td class="pg-nome">${x.nome}</td>
+        <td><span class="pg-equipe-tag">${x.equipe}</span></td>
+        <td class="pg-num">${fmtNum(x.discagem)}</td>
+        <td class="pg-num">${fmtNum(x.ligacoes)}</td>
+        <td class="pg-pct">${x.efetividade}%</td>
+        <td class="pg-num">${fmtNum(x.cotacoes)}</td>
+        <td class="pg-num">${fmtNum(x.reunioes)}</td>
+        <td class="pg-faturamento">${fmtMoeda(x.faturamento)}</td>
+        <td class="pg-num">${fmtNum(x.cargas)}</td>
+        <td class="pg-num">${fmtNum(x.clientesNovos)}</td>
+      </tr>
+    `).join('');
+  }
+
+  // ---------- Barra de período ----------
+  const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const DIAS_SEMANA = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function hojeISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+  function primeiroDiaMesISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-01`;
+  }
+  function isoParaBR(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  const agora = new Date();
+  const anoAtual = agora.getFullYear();
+  const mesAtual = agora.getMonth();
+  const trimestreAtual = Math.floor(mesAtual / 3) + 1;
+  const semestreAtual = mesAtual < 6 ? 1 : 2;
+
+  function popularAnos(select) {
+    for (let a = anoAtual; a >= anoAtual - 2; a--) {
+      const opt = document.createElement('option');
+      opt.value = a; opt.textContent = a;
+      select.appendChild(opt);
+    }
+  }
+  function popularMeses(select) {
+    MESES.forEach((nome, i) => {
+      const opt = document.createElement('option');
+      opt.value = i; opt.textContent = nome;
+      select.appendChild(opt);
+    });
+  }
+
+  const inputDia = $('inputDia');
+  const selectMes = $('selectMes'), selectAnoMes = $('selectAnoMes');
+  const selectTrimestre = $('selectTrimestre'), selectAnoTri = $('selectAnoTri');
+  const selectSemestre = $('selectSemestre'), selectAnoSem = $('selectAnoSem');
+  const selectAno = $('selectAno');
+  const inputInicio = $('inputInicio'), inputFim = $('inputFim');
+
+  inputDia.value = hojeISO();
+  popularMeses(selectMes); selectMes.value = mesAtual;
+  popularAnos(selectAnoMes); selectAnoMes.value = anoAtual;
+  selectTrimestre.value = trimestreAtual;
+  popularAnos(selectAnoTri); selectAnoTri.value = anoAtual;
+  selectSemestre.value = semestreAtual;
+  popularAnos(selectAnoSem); selectAnoSem.value = anoAtual;
+  popularAnos(selectAno); selectAno.value = anoAtual;
+  inputInicio.value = primeiroDiaMesISO();
+  inputFim.value = hojeISO();
+
+  let periodoAtual = 'dia';
+  const CONTROLES = { dia: 'ctrlDia', mes: 'ctrlMes', trimestre: 'ctrlTrimestre', semestre: 'ctrlSemestre', ano: 'ctrlAno', periodo: 'ctrlPeriodo' };
+
+  document.querySelectorAll('.pg-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      periodoAtual = btn.dataset.periodo;
+      document.querySelectorAll('.pg-tab').forEach(b => b.classList.toggle('is-active', b === btn));
+      Object.entries(CONTROLES).forEach(([tipo, id]) => { $(id).hidden = (tipo !== periodoAtual); });
+      carregarDados();
+    });
+  });
+
+  [inputDia, selectMes, selectAnoMes, selectTrimestre, selectAnoTri, selectSemestre, selectAnoSem, selectAno, inputInicio, inputFim]
+    .forEach(el => el.addEventListener('change', carregarDados));
+
+  function paramsAtuais() {
+    const p = { action: 'painel', periodo: periodoAtual };
+    if (periodoAtual === 'dia') {
+      p.dataDia = isoParaBR(inputDia.value || hojeISO());
+    } else if (periodoAtual === 'mes') {
+      p.mes = selectMes.value; p.ano = selectAnoMes.value;
+    } else if (periodoAtual === 'trimestre') {
+      p.trimestre = selectTrimestre.value; p.ano = selectAnoTri.value;
+    } else if (periodoAtual === 'semestre') {
+      p.semestre = selectSemestre.value; p.ano = selectAnoSem.value;
+    } else if (periodoAtual === 'ano') {
+      p.ano = selectAno.value;
+    } else if (periodoAtual === 'periodo') {
+      p.dataInicio = isoParaBR(inputInicio.value); p.dataFim = isoParaBR(inputFim.value);
+    }
+    return p;
+  }
+
+  function rotuloAmigavel(per) {
+    if (periodoAtual === 'dia') {
+      const [y, m, d] = inputDia.value.split('-').map(Number);
+      const dt = new Date(y, m - 1, d);
+      return `${DIAS_SEMANA[dt.getDay()]}, ${d} de ${MESES[m - 1].toLowerCase()}`;
+    }
+    if (periodoAtual === 'mes') return `${MESES[Number(selectMes.value)]} / ${selectAnoMes.value}`;
+    if (periodoAtual === 'trimestre') return `${selectTrimestre.value}º Trimestre de ${selectAnoTri.value}`;
+    if (periodoAtual === 'semestre') return `${selectSemestre.value}º Semestre de ${selectAnoSem.value}`;
+    if (periodoAtual === 'ano') return `Ano de ${selectAno.value}`;
+    if (per && per.inicio && per.fim) return `${per.inicio} até ${per.fim}`;
+    return 'Período selecionado';
+  }
+
+  async function carregarDados() {
+    if (!CONFIG.API_URL || CONFIG.API_URL.indexOf('COLE_AQUI') === 0) {
+      $('atualizadoEm').textContent = 'Configure a API_URL em config.js';
+      return;
+    }
+    try {
+      const params = new URLSearchParams(paramsAtuais());
+      const r = await fetch(`${CONFIG.API_URL}?${params.toString()}`);
+      const d = await r.json();
+
+      renderMetasFaturamento(d.metasFaturamento);
+
+      const per = d.periodo || {};
+      const rotulo = rotuloAmigavel(per);
+      $('periodoTitulo').textContent = 'Desempenho — ' + rotulo;
+      $('tabelaTitulo').textContent = 'Desempenho Individual — ' + rotulo;
+      $('periodoSub').textContent = per.inicio === per.fim ? `dia ${per.inicio || ''}` : `de ${per.inicio || '—'} até ${per.fim || '—'}`;
+
+      const t = d.totais || {};
+      const dias = d.diasUteisPeriodo || 0;
+      const mediaDiscagem = dias > 0 ? `Média: ${fmtNum(Math.round((t.discagem || 0) / dias))} /dia útil` : '';
+      const mediaLigacoes = dias > 0 ? `Média: ${fmtNum(Math.round((t.ligacoes || 0) / dias))} /dia útil` : '';
+
+      $('kpiPeriodo').innerHTML = [
+        kpiCard('discagem', 'Discagens', fmtNum(t.discagem), mediaDiscagem),
+        kpiCard('ligacao', 'Ligações Efetivas', fmtNum(t.ligacoes), mediaLigacoes),
+        kpiCard('percentual', '% Efetividade', (t.percentualEfetividade || 0) + '%'),
+        kpiCard('cotacoes', 'Cotações', fmtNum(t.cotacoes)),
+        kpiCard('faturamento', 'Faturamento', fmtMoeda(t.faturamento)),
+        kpiCard('cargas', 'Cargas', fmtNum(t.cargas)),
+        kpiCard('reunioes', 'Reuniões', fmtNum(t.reunioes)),
+        kpiCard('clientesNovos', 'Clientes Novos', fmtNum(t.clientesNovos))
+      ].join('');
+
+      renderChartBlocos(t.blocos);
+      renderChartHBars('chartLigacoes', (d.detalhe || []).slice().sort((a, b) => b.ligacoes - a.ligacoes).map(x => ({ nome: x.nome, valor: x.ligacoes })), fmtNum);
+      renderChartHBars('chartFaturamento', (d.detalhe || []).map(x => ({ nome: x.nome, valor: x.faturamento })), fmtMoeda);
+
+      renderTabela(d.detalhe);
+
+      $('atualizadoEm').textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR');
+    } catch (e) {
+      console.error(e);
+      $('atualizadoEm').textContent = 'Erro ao atualizar os dados';
+    }
+  }
+
+  carregarDados();
+  setInterval(carregarDados, (CONFIG.ATUALIZAR_A_CADA_SEGUNDOS || 60) * 1000);
+})();
+</script>
+</body>
+</html>
