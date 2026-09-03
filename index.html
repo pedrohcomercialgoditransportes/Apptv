@@ -849,7 +849,7 @@
       $('totalClientesNovosDet').textContent = (d.totalClientesNovosHoje || 0) + ' no total';
 
       renderListaLigacoes(d.ligacoesAcumulado);
-      renderListaSimples('corpoCargas', d.cargasHoje, i => String(i.valor));
+      renderListaDupla('corpoCargas', d.cargasHoje, v => String(v));
       renderListaDupla('corpoFaturamento', d.faturamentoHojePorComercial, v => fmtMoeda(v));
       renderListaDupla('corpoReunioes', d.reunioesHoje, v => String(v));
       renderListaDupla('corpoClientesNovos', d.clientesNovosHoje, v => String(v));

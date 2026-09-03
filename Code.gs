@@ -168,7 +168,7 @@ function montarDados_() {
       cotacoesMes: 0, clientesNovosMes: 0, reunioesMes: 0,
       ligacoesHoje: 0, reunioesHoje: 0, clientesNovosHoje: 0,
       ligacoesMes: 0, ligacoesSemanaAtual: 0,
-      cargasHoje: 0, faturamentoHoje: 0
+      cargasHoje: 0, cargasMes: 0, faturamentoHoje: 0
     };
   });
 
@@ -191,7 +191,14 @@ function montarDados_() {
       if (!comercial) return;
 
       const dataLinha = parseDataBR_(dataStr) || (timestamp instanceof Date ? timestamp : null);
-      const ehHoje = dataStr === hojeStr;
+      // Comparamos ano/mês/dia (não a string) porque o Google Sheets às vezes
+      // converte sozinho a coluna "Data" de texto (dd/MM/yyyy) para uma célula
+      // de Data de verdade — nesse caso "dataStr === hojeStr" nunca bate, mesmo
+      // sendo hoje, porque um vira Date e o outro texto.
+      const ehHoje = !!dataLinha &&
+        dataLinha.getFullYear() === hoje.getFullYear() &&
+        dataLinha.getMonth() === hoje.getMonth() &&
+        dataLinha.getDate() === hoje.getDate();
       const noMes = dataLinha && dataLinha >= inicioMes && dataLinha <= hoje;
       const naSemana = dataLinha && dataLinha >= seteDiasAtras && dataLinha <= hoje;
       const naSemanaAtual = dataLinha && dataLinha >= inicioSemanaAtual && dataLinha <= hoje;
@@ -204,7 +211,7 @@ function montarDados_() {
           cotacoesMes: 0, clientesNovosMes: 0, reunioesMes: 0,
           ligacoesHoje: 0, reunioesHoje: 0, clientesNovosHoje: 0,
           ligacoesMes: 0, ligacoesSemanaAtual: 0,
-          cargasHoje: 0, faturamentoHoje: 0
+          cargasHoje: 0, cargasMes: 0, faturamentoHoje: 0
         };
       }
       const c = porComercial[comercial];
@@ -215,6 +222,7 @@ function montarDados_() {
         c.clientesNovosMes += Number(clienteNovo) || 0;
         c.reunioesMes += Number(reunioes) || 0;
         c.ligacoesMes += ligacoesLinha;
+        c.cargasMes += Number(cargas) || 0;
         totalFaturamentoMes += Number(faturamento) || 0;
         totalCotacoesQtd += Number(cotacoes) || 0;
         totalClientesNovosMes += Number(clienteNovo) || 0;
@@ -272,7 +280,7 @@ function montarDados_() {
     .map(x => ({ nome: x.nome, valor: x.clientesNovosHoje, mes: x.clientesNovosMes }));
 
   const cargasHoje = lista.slice().sort((a, b) => b.cargasHoje - a.cargasHoje)
-    .map(x => ({ nome: x.nome, valor: x.cargasHoje }));
+    .map(x => ({ nome: x.nome, valor: x.cargasHoje, mes: x.cargasMes }));
 
   const faturamentoHojePorComercial = lista.slice().sort((a, b) => b.faturamentoHoje - a.faturamentoHoje)
     .map(x => ({ nome: x.nome, valor: x.faturamentoHoje, mes: x.faturamentoMes }));
