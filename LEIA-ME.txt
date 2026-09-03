@@ -1,4 +1,0 @@
-Salve aqui o logo oficial da GODI (logo.png) se quiser usá-lo na TV e no formulário.
-Veja o passo 3 do arquivo LEIA-ME.md na raiz do projeto.
-
-Sem esse arquivo, o site mostra automaticamente "GODI TRANSPORTES" estilizado no lugar do logo.
