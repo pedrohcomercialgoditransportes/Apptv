@@ -68,7 +68,7 @@ function getOrCreateLancamentos_() {
     sheet.appendRow([
       'Timestamp', 'Data', 'Comercial',
       'Bloco1', 'Bloco2', 'Bloco3', 'Bloco4', 'Bloco5', 'Bloco6', 'Bloco7',
-      'Cotacoes', 'Reunioes', 'Faturamento', 'ClienteNovo', 'Cargas'
+      'Cotacoes', 'Reunioes', 'Faturamento', 'ClienteNovo', 'Cargas', 'Discagem'
     ]);
     sheet.setFrozenRows(1);
   }
@@ -85,10 +85,19 @@ function getOrCreateConfig_() {
   let sheet = ss.getSheetByName(SHEET_CONFIG);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_CONFIG);
-    sheet.getRange(1, 1, 1, 2).setValues([['Comercial', 'MetaMensal']]);
-    const linhas = COMERCIAIS_PADRAO.map(nome => [nome, 0]);
-    sheet.getRange(2, 1, linhas.length, 2).setValues(linhas);
+    sheet.getRange(1, 1, 1, 3).setValues([['Comercial', 'MetaMensal', 'Equipe']]);
+    const linhas = COMERCIAIS_PADRAO.map(nome => [nome, 0, 'The Process']);
+    sheet.getRange(2, 1, linhas.length, 3).setValues(linhas);
     sheet.setFrozenRows(1);
+
+    // Tabela separada (colunas F:H) com a meta de Faturamento (diária/mensal)
+    // de cada equipe — independente da meta de faturamento por comercial acima
+    // (coluna B), que é somada pro time inteiro sem separar por equipe.
+    sheet.getRange(1, 6, 1, 3).setValues([['Equipe', 'MetaFaturamentoDiaria', 'MetaFaturamentoMensal']]);
+    sheet.getRange(2, 6, 2, 3).setValues([
+      ['The Process', 0, 0],
+      ['RedBull', 0, 0]
+    ]);
   }
   return sheet;
 }
@@ -128,7 +137,8 @@ function salvarLancamento_(body) {
     Number(body.reunioes) || 0,
     Number(body.faturamento) || 0,
     Number(body.clienteNovo) || 0,
-    Number(body.cargas) || 0
+    Number(body.cargas) || 0,
+    Number(body.discagem) || 0
   ]);
 }
 
@@ -151,15 +161,29 @@ function montarDados_() {
   const configSheet = getOrCreateConfig_();
   const configLastRow = configSheet.getLastRow();
   const roster = [];
+  const equipeDoComercial = {}; // nome -> equipe (RedBull / The Process / ...)
   let metaEquipeMensal = 0;
   if (configLastRow > 1) {
-    const linhas = configSheet.getRange(2, 1, configLastRow - 1, 2).getValues();
+    const linhas = configSheet.getRange(2, 1, configLastRow - 1, 3).getValues();
     linhas.forEach(r => {
       if (!r[0]) return;
-      roster.push(String(r[0]).trim());
+      const nome = String(r[0]).trim();
+      roster.push(nome);
       metaEquipeMensal += Number(r[1]) || 0;
+      equipeDoComercial[nome] = String(r[2] || '').trim() || 'The Process';
     });
   }
+
+  // Meta de Faturamento (diária/mensal) por equipe — tabela separada em F:H.
+  const metasEquipeMap = {}; // equipe -> { diaria, mensal }
+  const ordemEquipes = [];
+  const metasRange = configSheet.getRange(2, 6, 20, 3).getValues();
+  metasRange.forEach(r => {
+    if (!r[0]) return;
+    const equipe = String(r[0]).trim();
+    metasEquipeMap[equipe] = { diaria: Number(r[1]) || 0, mensal: Number(r[2]) || 0 };
+    ordemEquipes.push(equipe);
+  });
 
   const porComercial = {}; // nome -> agregados
   roster.forEach(nome => {
@@ -288,6 +312,29 @@ function montarDados_() {
   const destaqueSemana = ordenarTop_(lista, x => x.faturamentoSemana, 1)
     .map(x => ({ nome: x.nome, valor: x.faturamentoSemana }))[0] || null;
 
+  // Soma Faturamento (hoje/mês) de cada comercial dentro da equipe dele, e
+  // compara com a meta de Faturamento daquela equipe (aba Config, tabela F:H).
+  const faturamentoPorEquipe = {};
+  lista.forEach(x => {
+    const equipe = equipeDoComercial[x.nome] || 'The Process';
+    if (!faturamentoPorEquipe[equipe]) faturamentoPorEquipe[equipe] = { hoje: 0, mes: 0 };
+    faturamentoPorEquipe[equipe].hoje += x.faturamentoHoje;
+    faturamentoPorEquipe[equipe].mes += x.faturamentoMes;
+  });
+  const metasFaturamento = ordemEquipes.map(equipe => {
+    const meta = metasEquipeMap[equipe];
+    const soma = faturamentoPorEquipe[equipe] || { hoje: 0, mes: 0 };
+    return {
+      equipe: equipe,
+      hoje: soma.hoje,
+      metaDiaria: meta.diaria,
+      percentualDiaria: meta.diaria > 0 ? Math.round((soma.hoje / meta.diaria) * 100) : 0,
+      mes: soma.mes,
+      metaMensal: meta.mensal,
+      percentualMensal: meta.mensal > 0 ? Math.round((soma.mes / meta.mensal) * 100) : 0
+    };
+  });
+
   const diasUteisMes = contarDiasUteis_(inicioMes, new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0));
   const metaDiaEquipe = diasUteisMes > 0 ? metaEquipeMensal / diasUteisMes : 0;
 
@@ -319,6 +366,7 @@ function montarDados_() {
     faturamentoHojePorComercial: faturamentoHojePorComercial,
     ligacoesAcumulado: ligacoesAcumulado,
     totalLigacoesGeral: totalLigacoesMes,
+    metasFaturamento: metasFaturamento,
     destaqueSemana: destaqueSemana && destaqueSemana.valor > 0 ? destaqueSemana : null
   };
 }

@@ -22,7 +22,7 @@
   /* ---------- header (mesmo padrão do painel principal) ---------- */
   header.top {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 20px;
+    padding: 10px 20px; position: relative;
   }
   header.top .brand { display: flex; align-items: center; gap: 12px; }
   header.top img { height: 34px; display: block; }
@@ -48,65 +48,77 @@
   /* ---------- cartões: fundo claro (mesmo padrão do formulário) ---------- */
   .godi-panel { background: var(--godi-gradient); border: none; }
 
-  /* ---------- cronômetro (metade do espaço, bem grande) ---------- */
-  .cronometro-card {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    flex: 1; min-height: 0; gap: 4px; padding: 10px;
+  /* ---------- relógio: centralizado no meio do header, um pouco mais pra baixo ---------- */
+  .header-clock {
+    position: absolute; left: 50%; top: 62%; transform: translate(-50%, -50%);
+    display: flex; align-items: center; gap: 12px;
   }
-  .crono-icon { width: 34px; height: 34px; color: #054957; margin-bottom: 4px; }
-  .crono-hora {
-    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 108px; line-height: 1;
-    color: #06222b; font-variant-numeric: tabular-nums; letter-spacing: 2px;
+  /* ---------- coluna da direita (live + THE PROCESS): idem, um pouco mais pra baixo ---------- */
+  .header-right {
+    display: flex; align-items: center; gap: 12px; align-self: flex-end; margin-top: 10px;
   }
-  .crono-data {
-    font-size: 22px; font-weight: 700; color: #054957; text-transform: capitalize; margin-top: 6px;
+  .header-clock .crono-icon { width: 30px; height: 30px; color: #054957; flex-shrink: 0; }
+  .header-clock-text {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; line-height: 1.1;
+  }
+  .header-clock .crono-data {
+    font-size: 16px; font-weight: 700; color: #054957; text-transform: capitalize;
+  }
+  .header-clock .crono-hora {
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 58px; line-height: 1;
+    color: #06222b; font-variant-numeric: tabular-nums; letter-spacing: 0.5px;
   }
 
-  /* ---------- blocos de ligação (agenda do dia, em destaque) ---------- */
+  /* Header e blocos de ligação dividem entre si o espaço livre que sobra no
+     topo da tela (em vez de deixar um vazio parado ali embaixo, perto do
+     Top 3) — só na tela 1, por isso o seletor com #viewTop3 na frente. */
+  #viewTop3 > header.top { flex: 1; }
+
+  /* ---------- blocos de ligação (agenda do dia, compacto) ---------- */
   .bloco-ligacao-grande {
-    display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0;
-    padding: 16px 30px; justify-content: center;
+    display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0;
+    padding: 10px 24px; justify-content: center;
   }
   .blg-header {
     display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
   }
   .blg-title {
-    font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.3px;
-    display: flex; align-items: center; gap: 10px; color: #06222b;
+    font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.3px;
+    display: flex; align-items: center; gap: 8px; color: #06222b;
   }
-  .blg-title .ico { width: 22px; height: 22px; color: #054957; flex-shrink: 0; }
-  .blg-stats { display: flex; gap: 34px; }
+  .blg-title .ico { width: 18px; height: 18px; color: #054957; flex-shrink: 0; }
+  .blg-stats { display: flex; gap: 24px; }
   .blg-stat { text-align: right; }
   .blg-stat-valor {
-    font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 900; font-variant-numeric: tabular-nums;
+    font-family: 'Montserrat', sans-serif; font-size: 17px; font-weight: 900; font-variant-numeric: tabular-nums;
     line-height: 1; color: #06222b;
   }
   .blg-stat-label {
-    font-size: 9.5px; font-weight: 800; letter-spacing: 0.8px; color: rgba(6,34,43,0.6);
-    text-transform: uppercase; margin-top: 4px;
+    font-size: 8px; font-weight: 800; letter-spacing: 0.6px; color: rgba(6,34,43,0.6);
+    text-transform: uppercase; margin-top: 3px;
   }
 
-  .blg-periodos { display: flex; flex-direction: column; gap: 10px; flex: 1; justify-content: center; }
-  .blg-periodo-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .blg-periodos { display: flex; flex-direction: column; gap: 6px; flex: 1; justify-content: center; }
+  .blg-periodo-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .blg-periodo-titulo {
-    font-size: 13px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
-    color: #054957; flex-shrink: 0; min-width: 98px; display: flex; align-items: center; gap: 7px;
+    font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    color: #054957; flex-shrink: 0; min-width: 82px; display: flex; align-items: center; gap: 6px;
   }
-  .blg-periodo-titulo .ico { width: 17px; height: 17px; }
-  .blg-lista { display: flex; align-items: center; justify-content: center; gap: 12px; flex: 1; }
+  .blg-periodo-titulo .ico { width: 14px; height: 14px; }
+  .blg-lista { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
   .blg-bloco {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 18px; border-radius: 14px; border: none;
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 12px; border-radius: 12px; border: none;
     background: #08202C; cursor: pointer; user-select: none;
     transition: box-shadow 0.15s ease, background 0.15s ease;
   }
   .blg-bloco:hover { box-shadow: 0 0 0 2px var(--godi-cyan-bright); }
   .blg-bloco .blg-hora {
-    font-weight: 800; font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap;
+    font-weight: 800; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap;
     color: #fff;
   }
   .blg-bloco .blg-check {
-    width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35);
+    width: 17px; height: 17px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .blg-bloco .blg-check svg { width: 14px; height: 14px; opacity: 0; }
@@ -212,8 +224,46 @@
     color: rgba(6,34,43,0.55); font-size: 12px; font-weight: 700; text-align: center; padding: 0 8px;
   }
 
+  /* ---------- metas de cargas (diária/mensal, por equipe) ---------- */
+  .metas-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; flex-shrink: 0;
+  }
+  .meta-card {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 16px 14px; gap: 4px; text-align: center;
+  }
+  /* ---------- % no canto do card (percentual já alcançado da meta) ---------- */
+  .meta-percent-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: #08202C; color: var(--godi-mint);
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 14px;
+    padding: 4px 11px; border-radius: 999px; line-height: 1;
+  }
+  .meta-titulo {
+    font-size: 13px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase;
+    color: #06222b; line-height: 1.25; padding-right: 44px; width: 100%;
+  }
+  /* valor da meta, logo abaixo do título */
+  .meta-valor-alvo {
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 30px; line-height: 1.15;
+    color: #06222b; margin-top: 4px;
+  }
+  .meta-linhas { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+  .meta-linha {
+    display: flex; align-items: baseline; justify-content: center; gap: 6px;
+  }
+  .meta-linha-label {
+    font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px;
+    color: rgba(6,34,43,0.6);
+  }
+  .meta-linha-valor {
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 15px; color: #054957;
+  }
+
   @media (max-width: 1100px) {
     .top3-grid { grid-template-columns: repeat(2, 1fr); }
+    .metas-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
   /* ================= TELA 2 — DETALHADO DO DIA ================= */
@@ -314,6 +364,7 @@
 
     .top3-grid, .det-grid { grid-template-columns: 1fr; gap: 16px; }
     .top3-card, .det-card { padding-bottom: 20px; }
+    .metas-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   }
 </style>
 </head>
@@ -329,20 +380,22 @@
           <div class="godi-logo-wordmark">GODI<span>TRANSPORTES</span></div>
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:12px;">
+      <div class="header-clock">
+        <svg class="crono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 7v5l3.5 2"/>
+        </svg>
+        <div class="header-clock-text">
+          <div class="crono-data" id="cronoData">—</div>
+          <div class="crono-hora" id="cronoHora">--:--:--</div>
+        </div>
+      </div>
+
+      <div class="header-right">
         <div><span class="live-dot"></span><span class="live-label" id="liveLabel">ATUALIZANDO</span></div>
         <img class="the-process-badge" src="assets/the-process.jpg" alt="THE PROCESS" />
       </div>
     </header>
-
-    <section class="card godi-panel cronometro-card">
-      <svg class="crono-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9"/>
-        <path d="M12 7v5l3.5 2"/>
-      </svg>
-      <div class="crono-hora" id="cronoHora">--:--:--</div>
-      <div class="crono-data" id="cronoData">—</div>
-    </section>
 
     <section class="card godi-panel bloco-ligacao-grande">
       <div class="blg-header">
@@ -376,6 +429,8 @@
         </div>
       </div>
     </section>
+
+    <section class="metas-grid" id="metasGrid"></section>
 
     <div class="page-title">
       <h1>
@@ -632,6 +687,53 @@
     }).join('');
   }
 
+  // ---------- Metas de Faturamento (diária/mensal por equipe) ----------
+  // Card mostra: título -> valor da meta -> Realizado (faturado até agora) ->
+  // Falta (o que falta pra bater a meta) -> % já alcançado no canto do card.
+  function criarMetaCard(titulo, valor, meta, pct) {
+    const pctExibido = Math.max(0, Math.round(pct || 0));
+    const falta = Math.max(0, meta - valor);
+    return `
+      <div class="card godi-panel meta-card">
+        <div class="meta-percent-badge">${pctExibido}%</div>
+        <div class="meta-titulo">${titulo}</div>
+        <div class="meta-valor-alvo">${fmtMoeda(meta)}</div>
+        <div class="meta-linhas">
+          <div class="meta-linha">
+            <span class="meta-linha-label">Realizado:</span>
+            <span class="meta-linha-valor">${fmtMoeda(valor)}</span>
+          </div>
+          <div class="meta-linha">
+            <span class="meta-linha-label">Falta:</span>
+            <span class="meta-linha-valor">${fmtMoeda(falta)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderMetasFaturamento(lista) {
+    const el = $('metasGrid');
+    if (!lista || !lista.length) { el.innerHTML = ''; return; }
+    const cards = [];
+    lista.forEach(m => {
+      cards.push(criarMetaCard(`Meta Diária · ${m.equipe}`, m.hoje, m.metaDiaria, m.percentualDiaria));
+      cards.push(criarMetaCard(`Meta Mensal · ${m.equipe}`, m.mes, m.metaMensal, m.percentualMensal));
+    });
+    el.innerHTML = cards.join('');
+  }
+
+  // A pedido do Pedro, o card principal (Top 3 do dia) não deve exibir o
+  // Jonathan Almeida — ele continua aparecendo normalmente na tela 2
+  // (detalhado), que tem seu próprio carregarDados() sem esse filtro.
+  const NOME_FORA_DO_PODIO = 'Jonathan Almeida';
+  function semJonathan(lista) {
+    return (lista || []).filter(i => i.nome !== NOME_FORA_DO_PODIO);
+  }
+  function somaValor(lista) {
+    return (lista || []).reduce((s, i) => s + (Number(i.valor) || 0), 0);
+  }
+
   async function carregarDados() {
     if (!CONFIG.API_URL || CONFIG.API_URL.indexOf('COLE_AQUI') === 0) {
       $('liveLabel').textContent = 'CONFIGURE A API_URL';
@@ -641,17 +743,24 @@
       const r = await fetch(`${CONFIG.API_URL}?action=dados`);
       const d = await r.json();
 
-      renderPodio('podioLigacoes', d.ligacoesHoje, i => String(i.valor));
-      renderPodio('podioCargas', d.cargasHoje, i => String(i.valor));
-      renderPodio('podioClientesNovos', d.clientesNovosHoje, i => String(i.valor));
-      renderPodio('podioReunioes', d.reunioesHoje, i => String(i.valor));
-      renderPodio('podioFaturamento', d.faturamentoHojePorComercial, i => fmtMoedaCompacta(i.valor));
+      const ligacoesHoje = semJonathan(d.ligacoesHoje);
+      const cargasHoje = semJonathan(d.cargasHoje);
+      const clientesNovosHoje = semJonathan(d.clientesNovosHoje);
+      const reunioesHoje = semJonathan(d.reunioesHoje);
+      const faturamentoHojePorComercial = semJonathan(d.faturamentoHojePorComercial);
 
-      $('totalLigacoes').textContent = (d.totalLigacoesHoje || 0) + ' no total';
-      $('totalCargas').textContent = (d.totalCargasHoje || 0) + ' no total';
-      $('totalClientesNovos').textContent = (d.totalClientesNovosHoje || 0) + ' no total';
-      $('totalReunioes').textContent = (d.totalReunioesHoje || 0) + ' no total';
-      $('totalFaturamento').textContent = fmtMoeda(d.totalFaturamentoHoje || 0) + ' no total';
+      renderPodio('podioLigacoes', ligacoesHoje, i => String(i.valor));
+      renderPodio('podioCargas', cargasHoje, i => String(i.valor));
+      renderPodio('podioClientesNovos', clientesNovosHoje, i => String(i.valor));
+      renderPodio('podioReunioes', reunioesHoje, i => String(i.valor));
+      renderPodio('podioFaturamento', faturamentoHojePorComercial, i => fmtMoedaCompacta(i.valor));
+      renderMetasFaturamento(d.metasFaturamento);
+
+      $('totalLigacoes').textContent = somaValor(ligacoesHoje) + ' no total';
+      $('totalCargas').textContent = somaValor(cargasHoje) + ' no total';
+      $('totalClientesNovos').textContent = somaValor(clientesNovosHoje) + ' no total';
+      $('totalReunioes').textContent = somaValor(reunioesHoje) + ' no total';
+      $('totalFaturamento').textContent = fmtMoeda(somaValor(faturamentoHojePorComercial)) + ' no total';
 
       $('liveLabel').textContent = 'ATUALIZADO ' + new Date().toLocaleTimeString('pt-BR');
     } catch (e) {
