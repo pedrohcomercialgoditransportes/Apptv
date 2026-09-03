@@ -386,16 +386,44 @@
     render();
     setInterval(render, 30000);
 
-    return { total, coletar: () => {
-      const dados = {};
-      todos.forEach((b, i) => { dados['bloco' + (i + 1)] = (estado[fmtHora(b.start)] && estado[fmtHora(b.start)].valor) || 0; });
-      return dados;
-    } };
+    return {
+      total,
+      // Estado completo (todos os blocos travados até agora hoje) — usado só
+      // pra exibir o total na tela e pro rascunho local. NÃO usar pra enviar
+      // ao servidor: se o comercial clicar em "Enviar resultado" mais de uma
+      // vez no mesmo dia, isso reenviaria de novo blocos que já tinham sido
+      // enviados na vez anterior, e a planilha somaria em dobro.
+      coletar: () => {
+        const dados = {};
+        todos.forEach((b, i) => { dados['bloco' + (i + 1)] = (estado[fmtHora(b.start)] && estado[fmtHora(b.start)].valor) || 0; });
+        return dados;
+      },
+      // Só os blocos que ainda NÃO foram enviados ao servidor (os já enviados
+      // em envios anteriores hoje entram como 0, pra não duplicar contagem).
+      coletarParaEnvio: () => {
+        const dados = {};
+        todos.forEach((b, i) => {
+          const key = fmtHora(b.start);
+          const salvo = estado[key];
+          dados['bloco' + (i + 1)] = (salvo && !salvo.enviado && typeof salvo.valor === 'number') ? salvo.valor : 0;
+        });
+        return dados;
+      },
+      // Marca os blocos travados como já enviados — chamar só depois de um
+      // envio confirmado com sucesso pro servidor.
+      marcarEnviados: () => {
+        todos.forEach(b => {
+          const key = fmtHora(b.start);
+          if (estado[key]) estado[key].enviado = true;
+        });
+        persist();
+      }
+    };
   })();
 
-  function coletarDados() {
+  function coletarDados(paraEnvio) {
     const dados = { comercial: $('comercial').value };
-    Object.assign(dados, BlocosDiscagem.coletar());
+    Object.assign(dados, paraEnvio ? BlocosDiscagem.coletarParaEnvio() : BlocosDiscagem.coletar());
     CAMPOS_RESULTADOS.forEach(id => dados[id] = Number($(id).value) || 0);
     return dados;
   }
@@ -424,7 +452,7 @@
   });
 
   $('btnEnviar').addEventListener('click', async () => {
-    const dados = coletarDados();
+    const dados = coletarDados(true);
     if (!dados.comercial) {
       mostrarToast('Selecione seu nome antes de enviar.', true);
       return;
@@ -441,6 +469,7 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight no Apps Script
         body: JSON.stringify(dados)
       });
+      BlocosDiscagem.marcarEnviados();
       localStorage.removeItem(CHAVE_RASCUNHO);
       mostrarToast('Resultado enviado! Bom trabalho 🚀');
       CAMPOS_RESULTADOS.forEach(id => $(id).value = '');
