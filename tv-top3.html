@@ -219,6 +219,23 @@
     .top3-grid { grid-template-columns: repeat(2, 1fr); }
     body { overflow: auto; height: auto; }
   }
+
+  /* Celular / janela bem estreita: empilha tudo em coluna única, sem cortar nada. */
+  @media (max-width: 700px) {
+    header.top { flex-wrap: wrap; row-gap: 8px; padding: 10px 12px; }
+    .cronometro-card { flex: none; padding: 14px 8px; }
+    .crono-hora { font-size: 54px; letter-spacing: 1px; }
+    .crono-data { font-size: 15px; }
+    .bloco-ligacao-grande { flex: none; padding: 12px 14px; }
+    .blg-header { row-gap: 8px; }
+    .blg-stats { gap: 16px; }
+    .blg-periodo-row { row-gap: 8px; }
+    .blg-periodo-titulo { min-width: auto; }
+    .blg-lista { flex-wrap: wrap; justify-content: flex-start; }
+    .page-title h1 { font-size: 18px; }
+    .top3-grid { grid-template-columns: 1fr; gap: 16px; }
+    .top3-card { padding-bottom: 20px; }
+  }
 </style>
 </head>
 <body>

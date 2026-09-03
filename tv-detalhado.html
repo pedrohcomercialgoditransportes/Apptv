@@ -118,6 +118,12 @@
     .det-grid { grid-template-columns: repeat(2, 1fr); }
     body { overflow: auto; height: auto; }
   }
+
+  /* Celular / janela bem estreita: empilha tudo em coluna única, sem cortar nada. */
+  @media (max-width: 700px) {
+    .det-grid { grid-template-columns: 1fr; gap: 16px; }
+    .page-title h1 { font-size: 18px; }
+  }
 </style>
 </head>
 <body>

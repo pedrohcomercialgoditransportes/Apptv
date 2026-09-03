@@ -283,6 +283,38 @@
   @media (max-width: 1300px) {
     .det-grid { grid-template-columns: repeat(2, 1fr); }
   }
+
+  /* ================= TELA PEQUENA (celular / janela reduzida) =================
+     A tela foi pensada pra TV (fixa, sem rolagem). Num celular ou janela
+     estreita isso faz os cards se espremerem e ficarem um em cima do outro.
+     Abaixo de 700px a gente troca pra um layout que empilha tudo em coluna
+     única e libera rolagem, em vez de cortar/sobrepor o conteúdo. */
+  @media (max-width: 700px) {
+    html, body { height: auto; overflow: auto; }
+    .tv-view {
+      position: relative; inset: auto; height: auto; min-height: 100vh;
+      overflow: visible; padding: 12px 10px;
+    }
+    .tv-view:not(.is-active) { display: none; }
+
+    header.top { flex-wrap: wrap; row-gap: 8px; padding: 10px 12px; }
+
+    .cronometro-card { flex: none; padding: 14px 8px; }
+    .crono-hora { font-size: 54px; letter-spacing: 1px; }
+    .crono-data { font-size: 15px; }
+
+    .bloco-ligacao-grande { flex: none; padding: 12px 14px; }
+    .blg-header { row-gap: 8px; }
+    .blg-stats { gap: 16px; }
+    .blg-periodo-row { row-gap: 8px; }
+    .blg-periodo-titulo { min-width: auto; }
+    .blg-lista { flex-wrap: wrap; justify-content: flex-start; }
+
+    .page-title h1 { font-size: 18px; }
+
+    .top3-grid, .det-grid { grid-template-columns: 1fr; gap: 16px; }
+    .top3-card, .det-card { padding-bottom: 20px; }
+  }
 </style>
 </head>
 <body>
