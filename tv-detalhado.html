@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GODI · Detalhado do Dia</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  body { padding: 16px 28px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* ---------- header (mesmo padrão das outras telas) ---------- */
+  header.top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 20px;
+  }
+  header.top .brand { display: flex; align-items: center; gap: 12px; }
+  header.top img { height: 34px; display: block; }
+  header.top img.hidden { display: none; }
+  header.top img.hidden + .fallback { display: flex; }
+  header.top .fallback { display: none; }
+  header.top .godi-logo-wordmark, header.top .godi-logo-wordmark span { color: #06222b; }
+
+  .the-process-badge {
+    width: 38px; height: 38px; border-radius: 50%; object-fit: cover;
+    border: 2px solid #08202C; box-shadow: 0 0 0 2px rgba(0,168,118,0.35);
+    display: block; flex-shrink: 0;
+  }
+
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #06222b;
+    display: inline-block; margin-right: 6px; box-shadow: 0 0 6px var(--godi-mint-bright);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .live-label { font-size: 10px; color: rgba(6,34,43,0.55); font-weight: 700; letter-spacing: 1px; }
+
+  /* ---------- cartões: fundo claro (mesmo padrão das outras telas) ---------- */
+  .godi-panel { background: var(--godi-gradient); border: none; }
+
+  /* ---------- título da página ---------- */
+  .page-title {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 2px 10px;
+  }
+  .page-title h1 {
+    font-family: 'Montserrat', sans-serif; font-size: 25px; font-weight: 900; margin: 0;
+    letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; color: #fff;
+  }
+  .page-title h1 .ico-titulo { width: 26px; height: 26px; color: var(--godi-mint); }
+  .page-title .sub {
+    font-size: 12px; color: rgba(255,255,255,0.65); font-weight: 700; letter-spacing: 0.3px;
+  }
+
+  /* ---------- grid de 5 colunas ---------- */
+  .det-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; flex: 1; min-height: 0; }
+  .det-card { display: flex; flex-direction: column; padding: 16px 16px 18px; min-height: 0; }
+
+  .det-label { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; margin-bottom: 14px; }
+  .det-label .det-icon-wrap {
+    width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: #08202C; color: var(--godi-mint); flex-shrink: 0;
+  }
+  .det-label .det-icon-wrap .ico { width: 22px; height: 22px; }
+  .det-label .det-titulo {
+    font-size: 14px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase;
+    color: #06222b; text-align: center; line-height: 1.25;
+  }
+  .det-label .det-total {
+    font-size: 13px; font-weight: 800; color: var(--godi-mint);
+    background: #08202C; padding: 2px 12px; border-radius: 999px;
+  }
+
+  .det-body {
+    flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px;
+    color: #06222b; overflow: hidden;
+  }
+  .det-vazio {
+    flex: 1; display: flex; align-items: center; justify-content: center; text-align: center;
+    color: rgba(6,34,43,0.5); font-size: 12px; font-weight: 700; padding: 0 10px;
+  }
+
+  /* ---------- lista de comerciais (Ligações no Dia) ---------- */
+  .det-lista { display: flex; flex-direction: column; flex: 1; justify-content: space-evenly; min-height: 0; }
+  .det-row { display: flex; align-items: center; gap: 10px; }
+  .det-avatar, .det-avatar-fallback {
+    width: 46px; height: 46px; border-radius: 50%; object-fit: cover; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+    background: #08202C; color: #fff; font-weight: 800; font-size: 14px;
+    font-family: 'Montserrat', sans-serif; border: 2px solid #08202C;
+  }
+  .det-row-body { flex: 1; min-width: 0; }
+  .det-row-nome {
+    font-weight: 800; font-size: 13px; color: #06222b; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;
+  }
+  .det-mini-stats { display: flex; gap: 5px; }
+  .det-mini {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #08202C; border-radius: 8px; padding: 3px 4px; min-width: 0; flex: 1;
+  }
+  .det-mini .det-mini-valor {
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 13px; line-height: 1.1;
+    color: var(--godi-cyan-bright); white-space: nowrap;
+  }
+  .det-mini.total { flex: 1.3; }
+  .det-mini.total .det-mini-valor { color: var(--godi-mint); font-size: 15px; }
+  .det-mini .det-mini-label {
+    font-size: 6.3px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;
+    color: rgba(255,255,255,0.6); margin-top: 1px; white-space: nowrap;
+  }
+
+  /* variante de estatística única (Cargas, Faturamento, Reuniões, Clientes Novos) */
+  .det-row .det-mini-stats.single .det-mini { flex: none; min-width: 72px; padding: 4px 10px; }
+  .det-row .det-mini-stats.single .det-mini-valor { font-size: 16px; color: var(--godi-mint); }
+
+  @media (max-width: 1300px) {
+    .det-grid { grid-template-columns: repeat(2, 1fr); }
+    body { overflow: auto; height: auto; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="top card godi-panel">
+    <div class="brand">
+      <img src="assets/logo.png" alt="GODI Transportes" onerror="this.classList.add('hidden')" />
+      <div class="fallback">
+        <div class="godi-logo-wordmark">GODI<span>TRANSPORTES</span></div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div><span class="live-dot"></span><span class="live-label" id="liveLabel">ATUALIZANDO</span></div>
+      <img class="the-process-badge" src="assets/the-process.jpg" alt="THE PROCESS" />
+    </div>
+  </header>
+
+  <div class="page-title">
+    <h1>
+      <svg class="ico-titulo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3.5" width="18" height="17" rx="2.5"/>
+        <path d="M3 9h18"/>
+        <path d="M7.5 13h3M7.5 16.5h6"/>
+      </svg>
+      DETALHADO DO DIA
+    </h1>
+    <div class="sub">Acompanhamento completo por comercial — equipe GODI</div>
+  </div>
+
+  <section class="det-grid">
+    <div class="card godi-panel det-card">
+      <div class="det-label">
+        <div class="det-icon-wrap"><svg class="ico" viewBox="0 0 24 24"><path d="M3 5.5C3 4 4 3 5.5 3h1.8c.5 0 .9.3 1 .8l1 3.3c.1.4 0 .8-.3 1.1L7.6 9.6c1 2.3 2.8 4.1 5.1 5.1l1.4-1.4c.3-.3.7-.4 1.1-.3l3.3 1c.5.1.8.5.8 1v1.8c0 1.5-1 2.5-2.5 2.5C9.9 21.5 2.5 14.1 3 5.5Z"/></svg></div>
+        <div class="det-titulo">Ligações no Dia</div>
+        <div class="det-total" id="totalLigacoes"></div>
+      </div>
+      <div class="det-body" id="corpoLigacoes">
+        <div class="det-vazio">Aguardando definição do conteúdo</div>
+      </div>
+    </div>
+
+    <div class="card godi-panel det-card">
+      <div class="det-label">
+        <div class="det-icon-wrap"><svg class="ico" viewBox="0 0 24 24"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18.5" r="1.6"/><circle cx="17.5" cy="18.5" r="1.6"/></svg></div>
+        <div class="det-titulo">Quantidade de Cargas</div>
+        <div class="det-total" id="totalCargas"></div>
+      </div>
+      <div class="det-body" id="corpoCargas">
+        <div class="det-vazio">Aguardando definição do conteúdo</div>
+      </div>
+    </div>
+
+    <div class="card godi-panel det-card">
+      <div class="det-label">
+        <div class="det-icon-wrap"><svg class="ico" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="det-titulo">Faturamento</div>
+        <div class="det-total" id="totalFaturamento"></div>
+      </div>
+      <div class="det-body" id="corpoFaturamento">
+        <div class="det-vazio">Aguardando definição do conteúdo</div>
+      </div>
+    </div>
+
+    <div class="card godi-panel det-card">
+      <div class="det-label">
+        <div class="det-icon-wrap"><svg class="ico" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3 2.5-5 6-5s6 2 6 5"/><path d="M10 20c0-3 2.5-5 6-5s6 2 6 5"/></svg></div>
+        <div class="det-titulo">Reuniões</div>
+        <div class="det-total" id="totalReunioes"></div>
+      </div>
+      <div class="det-body" id="corpoReunioes">
+        <div class="det-vazio">Aguardando definição do conteúdo</div>
+      </div>
+    </div>
+
+    <div class="card godi-panel det-card">
+      <div class="det-label">
+        <div class="det-icon-wrap"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M18 8v6M15 11h6"/></svg></div>
+        <div class="det-titulo">Clientes Novos</div>
+        <div class="det-total" id="totalClientesNovos"></div>
+      </div>
+      <div class="det-body" id="corpoClientesNovos">
+        <div class="det-vazio">Aguardando definição do conteúdo</div>
+      </div>
+    </div>
+  </section>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+
+  function fmtMoeda(v) {
+    return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+  }
+
+  const AVATAR_MAP = {
+    'Pedro Augusto': 'pedro-h',
+    'Rodrigo Albino': 'rodrigo-a',
+    'Natha Carlos': 'natha',
+    'Bruno Renato': 'bruno-r',
+    'Rafael Almeida': 'rafael-a',
+    'Nemir Prado': 'prado',
+    'Genesio Teixeira': 'genesio',
+    'Jonathan Almeida': 'jonatham-a',
+    'Ramon Felipe': 'ramon'
+  };
+  function avatarUrl(nome) {
+    const arquivo = AVATAR_MAP[nome];
+    return arquivo ? `assets/avatars/${arquivo}.png` : null;
+  }
+  function iniciaisDe(nome) {
+    const partes = String(nome || '').trim().split(/\s+/).filter(Boolean);
+    if (!partes.length) return '?';
+    const primeira = partes[0].charAt(0);
+    const ultima = partes.length > 1 ? partes[partes.length - 1].charAt(0) : '';
+    return (primeira + ultima).toUpperCase();
+  }
+  window.onDetAvatarError = function (imgEl, nome) {
+    const fallback = document.createElement('div');
+    fallback.className = 'det-avatar-fallback';
+    fallback.textContent = iniciaisDe(nome);
+    imgEl.replaceWith(fallback);
+  };
+  function avatarHtml(nome) {
+    const url = avatarUrl(nome);
+    return url
+      ? `<img class="det-avatar" src="${url}" alt="${nome}" onerror="onDetAvatarError(this, '${nome.replace(/'/g, "")}')" />`
+      : `<div class="det-avatar-fallback">${iniciaisDe(nome)}</div>`;
+  }
+
+  function renderListaLigacoes(itens) {
+    const el = $('corpoLigacoes');
+    if (!itens || !itens.length) {
+      el.innerHTML = '<div class="det-vazio">Sem lançamentos ainda</div>';
+      return;
+    }
+    el.innerHTML = `<div class="det-lista">${itens.map(item => `
+      <div class="det-row">
+        ${avatarHtml(item.nome)}
+        <div class="det-row-body">
+          <div class="det-row-nome">${item.nome}</div>
+          <div class="det-mini-stats">
+            <div class="det-mini total">
+              <div class="det-mini-valor">${item.valor}</div>
+              <div class="det-mini-label">No Mês</div>
+            </div>
+            <div class="det-mini">
+              <div class="det-mini-valor">${item.hoje || 0}</div>
+              <div class="det-mini-label">Hoje</div>
+            </div>
+            <div class="det-mini">
+              <div class="det-mini-valor">${item.mediaSemanal || 0}</div>
+              <div class="det-mini-label">Méd. Sem.</div>
+            </div>
+            <div class="det-mini">
+              <div class="det-mini-valor">${item.mediaMensal || 0}</div>
+              <div class="det-mini-label">Méd. Mês</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  function renderListaSimples(containerId, itens, formatarValor) {
+    const el = $(containerId);
+    if (!itens || !itens.length) {
+      el.innerHTML = '<div class="det-vazio">Sem lançamentos ainda hoje</div>';
+      return;
+    }
+    el.innerHTML = `<div class="det-lista">${itens.map(item => `
+      <div class="det-row">
+        ${avatarHtml(item.nome)}
+        <div class="det-row-body">
+          <div class="det-row-nome">${item.nome}</div>
+          <div class="det-mini-stats single">
+            <div class="det-mini">
+              <div class="det-mini-valor">${formatarValor(item)}</div>
+              <div class="det-mini-label">Hoje</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  // Igual renderListaSimples, mas com 2 estatísticas lado a lado: o acumulado
+  // do mês corrente (em destaque) e o valor de hoje — usado em Faturamento,
+  // Reuniões e Clientes Novos.
+  function renderListaDupla(containerId, itens, formatarValor) {
+    const el = $(containerId);
+    if (!itens || !itens.length) {
+      el.innerHTML = '<div class="det-vazio">Sem lançamentos ainda hoje</div>';
+      return;
+    }
+    el.innerHTML = `<div class="det-lista">${itens.map(item => `
+      <div class="det-row">
+        ${avatarHtml(item.nome)}
+        <div class="det-row-body">
+          <div class="det-row-nome">${item.nome}</div>
+          <div class="det-mini-stats">
+            <div class="det-mini total">
+              <div class="det-mini-valor">${formatarValor(item.mes || 0)}</div>
+              <div class="det-mini-label">No Mês</div>
+            </div>
+            <div class="det-mini">
+              <div class="det-mini-valor">${formatarValor(item.valor || 0)}</div>
+              <div class="det-mini-label">Hoje</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  async function carregarDados() {
+    if (!CONFIG.API_URL || CONFIG.API_URL.indexOf('COLE_AQUI') === 0) {
+      $('liveLabel').textContent = 'CONFIGURE A API_URL';
+      return;
+    }
+    try {
+      const r = await fetch(`${CONFIG.API_URL}?action=dados`);
+      const d = await r.json();
+
+      $('totalLigacoes').textContent = (d.totalLigacoesGeral || 0) + ' no mês';
+      $('totalCargas').textContent = (d.totalCargasHoje || 0) + ' no total';
+      $('totalFaturamento').textContent = fmtMoeda(d.totalFaturamentoHoje || 0) + ' no total';
+      $('totalReunioes').textContent = (d.totalReunioesHoje || 0) + ' no total';
+      $('totalClientesNovos').textContent = (d.totalClientesNovosHoje || 0) + ' no total';
+
+      renderListaLigacoes(d.ligacoesAcumulado);
+      renderListaSimples('corpoCargas', d.cargasHoje, i => String(i.valor));
+      renderListaDupla('corpoFaturamento', d.faturamentoHojePorComercial, v => fmtMoeda(v));
+      renderListaDupla('corpoReunioes', d.reunioesHoje, v => String(v));
+      renderListaDupla('corpoClientesNovos', d.clientesNovosHoje, v => String(v));
+
+      $('liveLabel').textContent = 'ATUALIZADO ' + new Date().toLocaleTimeString('pt-BR');
+    } catch (e) {
+      console.error(e);
+      $('liveLabel').textContent = 'ERRO AO ATUALIZAR';
+    }
+  }
+
+  carregarDados();
+  setInterval(carregarDados, (CONFIG.ATUALIZAR_A_CADA_SEGUNDOS || 30) * 1000);
+})();
+</script>
+</body>
+</html>
