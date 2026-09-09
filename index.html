@@ -1098,7 +1098,6 @@
                     osc.start(inicio);
                     osc.stop(inicio + 0.4);
             }
-    setTimeout(falarBloco, 3200);
       }
 
             function falarBloco() { try { if (!('speechSynthesis' in window)) return; var dizer = function () { var utter = new SpeechSynthesisUtterance('Ó O BLOCO! Ó O BLOCO! Hora de ligar!'); utter.lang = 'pt-BR'; utter.pitch = 1.4; utter.rate = 1.05; utter.volume = 1; var vozes = window.speechSynthesis.getVoices(); var vozPt = vozes.find(function (v) { return /pt(-|_)?br/i.test(v.lang); }) || vozes.find(function (v) { return /^pt/i.test(v.lang); }); if (vozPt) utter.voice = vozPt; window.speechSynthesis.speak(utter); }; if (window.speechSynthesis.getVoices().length === 0) { window.speechSynthesis.addEventListener('voiceschanged', dizer, { once: true }); } else { dizer(); } } catch (e) { console.warn('Falha ao falar o bloco:', e); } }
