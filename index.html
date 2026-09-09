@@ -1035,6 +1035,19 @@
       botaoAtivar.style.cssText = 'position:fixed;bottom:10px;right:10px;z-index:9998;padding:6px 12px;font-size:12px;border-radius:6px;border:none;background:rgba(0,0,0,0.35);color:#fff;cursor:pointer;opacity:0.55;';
       document.body.appendChild(botaoAtivar);
 
+      const botaoTestar = document.createElement('button');
+      botaoTestar.id = 'alarmeTestar';
+      botaoTestar.textContent = '🔔 Testar alarme';
+      botaoTestar.style.cssText = 'position:fixed;bottom:44px;right:10px;z-index:9998;padding:6px 12px;font-size:12px;border-radius:6px;border:none;background:rgba(0,0,0,0.35);color:#fff;cursor:pointer;opacity:0.55;';
+      document.body.appendChild(botaoTestar);
+      botaoTestar.addEventListener('click', function () {
+            const ctx = getAudioCtx();
+            if (ctx && ctx.state === 'suspended') ctx.resume();
+            tocarAlarme();
+            mostrarBanner();
+      });
+    
+
       function horariosDeInicio() {
             const cfg = (typeof CONFIG !== 'undefined' && CONFIG.BLOCOS_LIGACAO) || {};
             const grupos = [].concat(cfg.manha || [], cfg.tarde || []);
