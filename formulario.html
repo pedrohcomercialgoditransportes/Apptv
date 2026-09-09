@@ -159,8 +159,7 @@
 
   <div class="card godi-panel">
     <h2>Blocos de Ligação Efetiva · Contatos por horário</h2>
-    <div class="bloco-aviso">Cada campo libera assim que o horário do bloco termina. Depois de preenchido, ele trava — não dá mais pra editar.</div>
-    <div class="periodo-label">Manhã</div>
+          <div class="bloco-aviso">🔒 Agora contado automaticamente pelo sistema (Orchestror). Não precisa mais preencher aqui.</div>
     <div class="blocos-grid" id="blocosManha"></div>
     <div class="periodo-label">Tarde</div>
     <div class="blocos-grid" id="blocosTarde"></div>
@@ -188,7 +187,7 @@
       </div>
       <div class="field">
         <label><span class="field-icon"><svg class="ico" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3 2.5-5 6-5s6 2 6 5"/><path d="M10 20c0-3 2.5-5 6-5s6 2 6 5"/></svg></span>Reuniões</label>
-        <input type="number" inputmode="numeric" min="0" id="reunioes" placeholder="0" />
+              <input type="number" inputmode="numeric" min="0" id="reunioes" placeholder="Automático" disabled title="Sincronizado automaticamente do Orchestror" />
       </div>
       <div class="field">
         <label><span class="field-icon"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M18 8v6M15 11h6"/></svg></span>Cliente novo</label>
@@ -289,7 +288,7 @@
     function agora() {
       const d = new Date();
       const dateKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
-      const partes = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(d);
+      const partes = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(d);      
       const nowMin = toMin(
         parseInt(partes.find(p => p.type === 'hour').value, 10),
         parseInt(partes.find(p => p.type === 'minute').value, 10)
@@ -318,7 +317,7 @@
       blocos.forEach((b, i) => {
         const key = fmtHora(b.start);
         const salvo = estado[key];
-        const liberado = nowMin >= b.end;
+        const liberado = false; // travado manualmente: blocos agora sao automaticos (Orchestror)
         const travado = !!(salvo && salvo.travado);
 
         const slot = document.createElement('div');
