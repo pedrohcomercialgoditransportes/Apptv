@@ -1020,6 +1020,101 @@
   }, segundos * 1000);
 })();
 </script>
+<script>
+  (function () {
+      // ---------- alarme sonoro no inicio de cada bloco de ligacao ----------
+      const banner = document.createElement('div');
+      banner.id = 'alarmeBloco';
+      banner.style.cssText = 'position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(220,38,38,0.92);';
+      banner.innerHTML = '<div style="text-align:center;color:#fff;"><div style="font-size:64px;font-weight:900;letter-spacing:2px;">🔔 BLOCO DE LIGAÇÃO!</div><div style="font-size:28px;margin-top:12px;font-weight:600;">Foco total nas ligações agora</div></div>';
+      document.body.appendChild(banner);
 
+      const botaoAtivar = document.createElement('button');
+      botaoAtivar.id = 'alarmeAtivarSom';
+      botaoAtivar.textContent = '🔊 Ativar som do alarme';
+      botaoAtivar.style.cssText = 'position:fixed;bottom:10px;right:10px;z-index:9998;padding:6px 12px;font-size:12px;border-radius:6px;border:none;background:rgba(0,0,0,0.35);color:#fff;cursor:pointer;opacity:0.55;';
+      document.body.appendChild(botaoAtivar);
+
+      function horariosDeInicio() {
+            const cfg = (typeof CONFIG !== 'undefined' && CONFIG.BLOCOS_LIGACAO) || {};
+            const grupos = [].concat(cfg.manha || [], cfg.tarde || []);
+            return grupos.map(function (b) { return { h: b[0], m: b[1] }; });
+      }
+      const INICIOS = horariosDeInicio();
+      const jaTocouHoje = new Set();
+      let audioCtx = null;
+
+      function getAudioCtx() {
+            if (!audioCtx) {
+                    const Ctor = window.AudioContext || window.webkitAudioContext;
+                    if (Ctor) audioCtx = new Ctor();
+            }
+            return audioCtx;
+      }
+
+      botaoAtivar.addEventListener('click', function () {
+            const ctx = getAudioCtx();
+            if (ctx && ctx.state === 'suspended') ctx.resume();
+            botaoAtivar.textContent = '🔊 Som ativado';
+            setTimeout(function () { botaoAtivar.style.display = 'none'; }, 1500);
+      });
+
+      function agoraSP() {
+            const partes = new Intl.DateTimeFormat('en-GB', {
+                    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            }).formatToParts(new Date());
+            const obj = {};
+            partes.forEach(function (p) { obj[p.type] = p.value; });
+            return obj;
+      }
+
+      function tocarAlarme() {
+            const ctx = getAudioCtx();
+            if (!ctx) return;
+            if (ctx.state === 'suspended') ctx.resume();
+            const agora = ctx.currentTime;
+            for (let i = 0; i < 8; i++) {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.value = i % 2 === 0 ? 880 : 660;
+                    gain.gain.value = 0.4;
+                    osc.connect(gain).connect(ctx.destination);
+                    const inicio = agora + i * 0.4;
+                    osc.start(inicio);
+                    osc.stop(inicio + 0.4);
+            }
+      }
+
+      function mostrarBanner() {
+            banner.style.display = 'flex';
+            setTimeout(function () { banner.style.display = 'none'; }, 6000);
+      }
+
+      function verificar() {
+            const a = agoraSP();
+            const horaAtual = parseInt(a.hour, 10);
+            const minAtual = parseInt(a.minute, 10);
+            const segAtual = parseInt(a.second, 10);
+            const chaveData = a.year + '-' + a.month + '-' + a.day;
+            INICIOS.forEach(function (b) {
+                    if (horaAtual === b.h && minAtual === b.m && segAtual < 5) {
+                              const chave = chaveData + '-' + b.h + '-' + b.m;
+                              if (!jaTocouHoje.has(chave)) {
+                                          jaTocouHoje.add(chave);
+                                          tocarAlarme();
+                                          mostrarBanner();
+                              }
+                    }
+            });
+      }
+
+      setInterval(verificar, 1000);
+  })();
+  
+    
+    
+</script>
 </body>
 </html>
