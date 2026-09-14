@@ -159,7 +159,7 @@
 
   <div class="card godi-panel">
     <h2>Blocos de Ligação Efetiva · Contatos por horário</h2>
-          <div class="bloco-aviso">🔒 Agora contado automaticamente pelo sistema (Orchestror). Não precisa mais preencher aqui.</div>
+          <div class="bloco-aviso">✏️ Preenchimento manual temporário — o sistema automático (Orchestror) está fora do ar. Preencha os blocos abaixo.</div>
     <div class="blocos-grid" id="blocosManha"></div>
     <div class="periodo-label">Tarde</div>
     <div class="blocos-grid" id="blocosTarde"></div>
@@ -317,7 +317,7 @@
       blocos.forEach((b, i) => {
         const key = fmtHora(b.start);
         const salvo = estado[key];
-        const liberado = false; // travado manualmente: blocos agora sao automaticos (Orchestror)
+        const liberado = true; // destravado: Orchestror fora do ar, lançamento volta a ser manual
         const travado = !!(salvo && salvo.travado);
 
         const slot = document.createElement('div');
