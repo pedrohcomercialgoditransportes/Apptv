@@ -779,8 +779,8 @@
     function fmtHora(mins) { return pad(Math.floor(mins / 60)) + ':' + pad(mins % 60); }
 
     const HORARIOS = (CONFIG.BLOCOS_LIGACAO) || {
-      manha: [[8, 45, 9, 15], [9, 45, 10, 15], [10, 45, 11, 15]],
-      tarde: [[13, 45, 14, 15], [14, 45, 15, 15], [15, 45, 16, 15], [16, 45, 17, 15]]
+      manha: [[9, 0, 10, 0], [10, 30, 11, 30]],
+      tarde: [[13, 45, 14, 45], [15, 0, 16, 0], [16, 30, 17, 30]]
     };
     function paraFaixas(lista) {
       return lista.map(([h1, m1, h2, m2]) => ({ start: toMin(h1, m1), end: toMin(h2, m2) }));
