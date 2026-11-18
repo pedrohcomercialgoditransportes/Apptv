@@ -3,6 +3,10 @@
 // Depois de publicar o Apps Script (veja LEIA-ME.md), cole aqui a URL
 // que o Google te deu ao implantar como "App da Web".
 const CONFIG = {
+  // Nomes que NÃO aparecem nas telas da TV (rankings, pódio, detalhado),
+  // mesmo que tenham lançamentos no mês. Escreva igual ao nome lançado.
+  OCULTAR_NA_TV: ['Nemir Prado', 'Jonathan Almeida'],
+
   API_URL: "https://script.google.com/macros/s/AKfycbwj2Ndty-3llW2cgwfYPx_pFYJ7SrzTaRM8WmxU4OLMn_xpOnx2E0fVPyoHdLE0LapJ5w/exec",
 
   // Cada quantos segundos a TV busca dados novos.
@@ -27,3 +31,22 @@ const CONFIG = {
     ]
   }
 };
+
+// Remove das listas da TV (qualquer lista com "nome") quem está em OCULTAR_NA_TV.
+function ocultarNaTV(dados) {
+  const ocultos = (CONFIG.OCULTAR_NA_TV || []).map(n => String(n).trim().toLowerCase());
+  if (!ocultos.length || !dados) return dados;
+  const limpar = (v) => {
+    if (Array.isArray(v)) {
+      return v
+        .filter(it => !(it && typeof it === 'object' && 'nome' in it &&
+          ocultos.includes(String(it.nome).trim().toLowerCase())))
+        .map(limpar);
+    }
+    if (v && typeof v === 'object') {
+      Object.keys(v).forEach(k => { v[k] = limpar(v[k]); });
+    }
+    return v;
+  };
+  return limpar(dados);
+}

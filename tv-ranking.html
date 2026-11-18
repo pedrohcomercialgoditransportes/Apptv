@@ -369,7 +369,7 @@
     'Fernando A': 'fernando-a',
     'Mariana Oberik': 'mariana-o',
     'Debora Stenger': 'debora-s',
-    'Ana Hirdt': 'ana-h',
+    'Ana Herdt': 'ana-h',
     'Camila Bouno': 'camila-b'
   };
   function avatarUrl(nome) {
@@ -443,7 +443,7 @@
     }
     try {
       const r = await fetch(`${CONFIG.API_URL}?action=dados`);
-      const d = await r.json();
+      const d = (typeof ocultarNaTV === 'function' ? ocultarNaTV : (x => x))(await r.json());
 
       $('faturamentoMes').textContent = fmtMoeda(d.totalFaturamentoMes);
       $('metaMensal').textContent = fmtMoeda(d.metaEquipeMensal);
